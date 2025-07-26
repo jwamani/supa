@@ -1,0 +1,30 @@
+// Server-side database logic
+// - Automatic data processing
+// - Complex validations
+// - Audit trails
+// - Custom business rules
+
+// Deep dive into Row Level Security
+// - User isolation patterns
+// - Multi-tenant security
+// - Complex policy creation
+// - Security testing
+
+// Integrate everything you've learned
+// Choose from:
+// - 📱 Social Media App (posts, likes, comments, real-time)
+// - 📝 Collaborative Document Editor (real-time editing)
+// - 🎯 Project Management Tool (tasks, teams, files)
+// - 💬 Advanced Chat App (rooms, presence, typing indicators)
+
+
+// Beyond basic subscriptions
+// - Presence indicators (who's online)
+// - Typing indicators
+// - Broadcast channels
+// - Real-time cursors/collaboration
+
+📱 "SocialVibe" - Mini social media with posts, comments, likes, real-time updates
+📝 "DocCollab" - Real-time collaborative document editor
+🎯 "TaskMaster" - Project management with teams, files, chat
+💬 "ChatPro" - Advanced chat with rooms, presence, file sharing

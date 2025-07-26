@@ -98,13 +98,6 @@ function SupabaseTest() {
                                     <li>• Confirms network connectivity</li>
                                 </ul>
                             </div>
-                            <div>
-                                <h5 className="font-semibold text-slate-700 mb-2">Environment variables used:</h5>
-                                <ul className="text-sm text-slate-600 space-y-1">
-                                    <li>• <code className="bg-slate-200 px-1 rounded">VITE_SUPABASE_URL</code></li>
-                                    <li>• <code className="bg-slate-200 px-1 rounded">VITE_SUPABASE_ANON_KEY</code></li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                 </div>

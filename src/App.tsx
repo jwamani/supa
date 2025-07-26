@@ -30,15 +30,16 @@ function App() {
                 </div>
             </header>
 
-            {/* Tab Navigation */}
+            {/* Tab Navigation - Mobile Scrollable */}
             <nav className="bg-white shadow-md sticky top-0 z-10">
                 <div className="container mx-auto px-4">
-                    <div className="flex justify-center items-center space-x-1">
+                    {/* 📱 MOBILE RESPONSIVE: Scrollable tabs on small screens, centered on large screens */}
+                    <div className="flex md:justify-center items-center overflow-x-auto scrollbar-hide space-x-1 min-w-0">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-6 py-4 font-medium text-base transition-all duration-300 border-b-3 hover:bg-slate-50 ${activeTab === tab.id
+                                className={`flex-shrink-0 px-4 md:px-6 py-4 font-medium text-sm md:text-base transition-all duration-300 border-b-3 hover:bg-slate-50 whitespace-nowrap ${activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600 bg-blue-50'
                                     : 'border-transparent text-slate-600 hover:text-slate-900'
                                     }`}

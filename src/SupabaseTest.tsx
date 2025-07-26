@@ -23,7 +23,7 @@ function SupabaseTest() {
                 setLoading(false)
             }
         }
-
+        
         testConnection()
     }, [])
 

@@ -249,7 +249,7 @@ create policy "Users can delete own messages" on messages for delete using (auth
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
-                                    <strong style={{ color: '#007bff' }}>{message.user_email}</strong>
+                                    <strong style={{ color: '#007bff' }}>{message.user_email.replace(message.user_email.slice((message.user_email.length / 2) - 3), "*".repeat(message.user_email.slice((message.user_email.length / 2) - 3 ).length))}</strong>
                                     <p style={{ margin: '5px 0' }}>{message.message}</p>
                                     <small style={{ color: '#666' }}>
                                         {new Date(message.created_at).toLocaleString()}

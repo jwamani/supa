@@ -81,15 +81,7 @@ function SupabaseTest() {
                         <div className="bg-red-50 border border-red-200 rounded-lg p-6 mt-8">
                             <h4 className="text-lg font-semibold text-red-800 mb-3">🔧 Troubleshooting</h4>
                             <div className="space-y-3 text-red-700">
-                                <div>
-                                    <p className="font-medium">1. Check your .env.local file:</p>
-                                    <pre className="bg-slate-800 text-green-400 p-3 rounded mt-2 text-sm">
-                                        {`VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key`}
-                                    </pre>
-                                </div>
                                 <p className="font-medium">2. Ensure your Supabase project is active</p>
-                                <p className="font-medium">3. Restart your development server after adding environment variables</p>
                             </div>
                         </div>
                     )}

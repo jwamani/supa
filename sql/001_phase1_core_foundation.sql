@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION extract_document_text(content JSONB) RETURNS TEXT AS 
         FROM recursive_text_nodes
         WHERE json_node ? 'content'
     )
-SELECT string_agg(json_node->>'text', '')
+SELECT string_agg(json_node->>'text', ' ')
 FROM recursive_text_nodes
 WHERE json_node->>'type' = 'text'
     AND json_node->>'text' IS NOT NULL
@@ -131,7 +131,13 @@ CREATE OR REPLACE FUNCTION update_document_statistics() RETURNS TRIGGER AS $$ BE
     NEW.content_text := extract_document_text(NEW.content);
 -- Calculate statistics
 NEW.word_count := COALESCE(
-    array_length(string_to_array(trim(NEW.content_text), ' '), 1),
+    array_length(
+        string_to_array(
+            regexp_replace(trim(NEW.content_text), '\s+', ' ', 'g'), 
+            ' '
+        ), 
+        1
+    ),
     0
 );
 NEW.character_count := char_length(NEW.content_text);

@@ -18,6 +18,7 @@ This is a beginner-friendly Supabase learning project built with React, TypeScri
 - `src/TodoApp.tsx` - CRUD operations demo with todos
 - `src/AuthDemo.tsx` - Authentication flow demonstration
 - `src/RealtimeDemo.tsx` - Real-time messaging demo
+- `src/pages`, components etc real and main project
 - `.env.local` - Environment variables (not in git)
 
 ## Development Guidelines
@@ -28,3 +29,9 @@ This is a beginner-friendly Supabase learning project built with React, TypeScri
 - Include SQL table creation instructions in error messages
 - Use inline styles for simplicity in learning components
 - Add educational comments and explanations in components
+
+## things to follow
+
+- always reference existent fields from the database and dont make up stuff.
+- always give me feedback on problems encountered including strategies and explain the code. 
+- explain the new concepts since i am learning and ways focus on the code and not much about the strategy

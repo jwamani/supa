@@ -54,7 +54,7 @@ interface PersistedState {
     documentCacheObject: Record<string, Document>; // Map serialized as object
 }
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 20 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 100; // Maximum documents to cache
 
 export const useDocumentsStore = create<DocumentsState>()(

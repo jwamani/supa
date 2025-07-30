@@ -1,0 +1,1 @@
+drop trigger update_document_statistics_trigger

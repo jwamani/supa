@@ -1,81 +1,134 @@
-import { useState } from 'react'
-import SupabaseTest from './SupabaseTest'
-import TodoApp from './TodoApp'
-import AuthDemo from './AuthDemo'
-import StorageDemo from './StorageDemo'
-import RelationshipsDemo from './RelationshipsDemo'
-import RealtimeDemo from './RealtimeDemo'
-import EdgeFunctionsDemo from './EdgeFunctionsDemo'
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAuthStore } from './store/authStore';
+import { AuthPage } from './pages/AuthPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { DocumentPage } from './pages/DocumentPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import PlayGround from './Ground';
 
-function App() {
-    const [activeTab, setActiveTab] = useState('connection')
+// Create React Query client
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
-    const tabs = [
-        { id: 'connection', label: '🔌 Connection', component: <SupabaseTest /> },
-        { id: 'auth', label: '🔐 Authentication', component: <AuthDemo /> },
-        { id: 'storage', label: '📁 Storage', component: <StorageDemo /> },
-        { id: 'relationships', label: '🔗 Relationships', component: <RelationshipsDemo /> },
-        { id: 'crud', label: '📝 CRUD Operations', component: <TodoApp /> },
-        { id: 'realtime', label: '💬 Real-time', component: <RealtimeDemo /> },
-        { id: 'edge-functions', label: '⚡ Edge Functions', component: <EdgeFunctionsDemo /> },
-    ]
+// Protected Route component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, loading, initialized } = useAuthStore();
+
+    if (!initialized || loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return <Navigate to="/auth" replace />;
+    }
+
+    return <>{children}</>;
+};
+
+// Public Route component (redirect if authenticated)
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, loading, initialized } = useAuthStore();
+
+    if (!initialized || loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return <>{children}</>;
+};
+
+const AppRoutes: React.FC = () => {
+    return (
+        <Routes>
+            {/* Public routes */}
+            <Route
+                path="/auth"
+                element={
+                    <PublicRoute>
+                        <AuthPage />
+                    </PublicRoute>
+                }
+            />
+
+            {/* Protected routes */}
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <DashboardPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/document/:id"
+                element={
+                    <ProtectedRoute>
+                        <DocumentPage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route path='/playground' element={
+                <PublicRoute>
+                    <PlayGround />
+                </PublicRoute>
+            } />
+
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+            {/* 404 fallback */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+    );
+};
+
+const App: React.FC = () => {
+    const { initialize } = useAuthStore();
+
+    useEffect(() => {
+        initialize();
+    }, [initialize]);
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            {/* Header */}
-            <header className="bg-gradient-to-r from-sky-600 to-green-600 text-white">
-                <div className="container mx-auto px-4 py-8 text-center">
-                    <h1 className="text-4xl font-bold mb-2">🚀 Supabase Learning Journey</h1>
-                    <p className="text-lg opacity-90">Learn Supabase concepts step by step</p>
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <div className="App">
+                    <AppRoutes />
                 </div>
-            </header>
+            </Router>
+        </QueryClientProvider>
+    );
+};
 
-            {/* Tab Navigation - Mobile Scrollable */}
-            <nav className="bg-white shadow-md sticky top-0 z-10">
-                <div className="container mx-auto px-4">
-                    {/* 📱 MOBILE RESPONSIVE: Scrollable tabs on small screens, centered on large screens */}
-                    <div className="flex md:justify-center items-center overflow-x-auto scrollbar-hide space-x-1 min-w-0">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex-shrink-0 px-4 md:px-6 py-4 font-medium text-sm md:text-base transition-all duration-300 border-b-3 hover:bg-slate-50 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600 bg-blue-50'
-                                    : 'border-transparent text-slate-600 hover:text-slate-900'
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </nav>
-
-            {/* Content */}
-            <main className="container mx-auto px-4 py-8 min-h-screen">
-                <div className="max-w-6xl mx-auto">
-                    {tabs.find(tab => tab.id === activeTab)?.component}
-                </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="bg-slate-100 border-t border-slate-200">
-                <div className="container mx-auto px-4 py-6 text-center text-slate-600">
-                    <p className="text-sm">
-                        📚 Learning Supabase: Database, Auth, Real-time, and more! |{' '}
-                        <a
-                            href="https://supabase.com/docs"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-supabase-600 hover:text-supabase-700 font-medium"
-                        >
-                            Official Docs
-                        </a>
-                    </p>
-                </div>
-            </footer>
-        </div>
-    )
-}
-
-export default App
+export default App;

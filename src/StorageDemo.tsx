@@ -49,7 +49,6 @@ function StorageDemo() {
             return false
         }
     }, [])
-
     // 📂 FETCH FILES: Load user's uploaded files with proper error handling
     const fetchUserFiles = useCallback(async (currentUser?: User | null) => {
         const userToUse = currentUser || user
@@ -88,9 +87,7 @@ function StorageDemo() {
                 console.log('No files found for user:', userToUse.id)
                 setFiles([])
                 // Clear any existing errors if we successfully connected but found no files
-                if (error === null) {
-                    setError(null)
-                }
+                setError(null)
                 return
             }
 
@@ -139,9 +136,9 @@ function StorageDemo() {
         } finally {
             setFetchingFiles(false)
         }
-    }, [user])
+    }, []) // 🔧 FIX: Remove user dependency to prevent recreations
 
-    // 👤 AUTHENTICATION CHECK: Verify user is signed in
+    // 👤 AUTHENTICATION CHECK: Verify user is signed in (only run once on mount)
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
@@ -159,7 +156,7 @@ function StorageDemo() {
             }
         }
         getUser()
-    }, [checkBucketExists, fetchUserFiles])
+    }, []) // 🔧 FIX: Empty dependency array - only run on mount
 
     // 📤 HANDLE FILE UPLOAD: Upload file and refresh list
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -469,9 +466,9 @@ CREATE POLICY "Users can delete their own files" ON storage.objects
                                     <p>No files uploaded yet. Upload your first file above! 👆</p>
                                 </div>
                             ) : (
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-2">
                                     {files.map((file) => (
-                                        <div key={file.name} className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        <div key={file.name} className="bg-white border border-slate-200 w-100 rounded-lg p-4 hover:shadow-md transition-shadow">
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="flex-shrink-0">

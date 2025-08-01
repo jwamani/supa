@@ -16,20 +16,24 @@ export const useCollaboration = () => {
     const addCollaborator = async (userEmail: string, documentId: string, userRole: string) => {
         try {
             const owner_id = user?.id;
-            const { data, error } = await supabase.from("auth").select("id").eq('email', userEmail).single();
+            const { data, error } = await supabase.from("profiles").select("id").eq('email', userEmail).single();
 
             if (error) throw error;
 
-            const permission = await supabase.from("document_permissions").insert({
+            const {data: permission, error: permissionError} = await supabase.from("document_permissions").insert({
                 document_id: documentId,
                 user_id: data.id,
                 role: userRole,
                 granted_by: owner_id
-            }).single();
+            }).select().single();
+
+            if (permissionError) throw permissionError;
             
+            return {success: true, permission}
 
-        } catch {
-
+        } catch(err) {
+            console.error("Failed to add collaborator: ", err);
+            return {success: false, error: err}
         }
     }
 

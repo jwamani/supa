@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ModernDashboardPage } from './pages/ModernDashboardPage';
 import { DocumentPage } from './pages/DocumentPage';
+import { ModernDocumentPage } from './pages/ModernDocumentPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import PlayGround from './Ground';
@@ -75,7 +77,7 @@ const AppRoutes: React.FC = () => {
                 path="/dashboard"
                 element={
                     <ProtectedRoute>
-                        <DashboardPage />
+                        <ModernDashboardPage />
                     </ProtectedRoute>
                 }
             />
@@ -84,7 +86,7 @@ const AppRoutes: React.FC = () => {
                 path="/document/:id"
                 element={
                     <ProtectedRoute>
-                        <DocumentPage />
+                        <ModernDocumentPage />
                     </ProtectedRoute>
                 }
             />

@@ -17,11 +17,14 @@ import "../styles/editor.css";
 
 interface TiptapEditorProps {
     content: any;
-    onUpdate: (content: any, textContent: string) => void;
+    onChange?: (content: any) => void;
+    onUpdate?: (content: any) => void; // Keep backward compatibility
+    onEditorReady?: (editor: Editor) => void;
     placeholder?: string;
     editable?: boolean;
     saving?: boolean;
     lastSaved?: Date | null;
+    className?: string;
 }
 
 // 🎓 LEARNING: Enhanced MenuBar with proper TypeScript and better UX
@@ -135,11 +138,14 @@ const getReadingTime = (wordCount: number): number => {
 
 const TiptapEditor: React.FC<TiptapEditorProps> = ({
     content,
+    onChange,
     onUpdate,
+    onEditorReady,
     placeholder = "Start writing...",
     editable = true,
     saving = false,
-    lastSaved = null
+    lastSaved = null,
+    className = ''
 }) => {
     // 🎓 LEARNING: Enhanced editor with additional extensions
     const editor = useEditor({
@@ -169,11 +175,18 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 hasContent: !!json?.content?.length,
                 jsonStructure: json
             });
-            onUpdate(json, text);
+
+            // Support both onChange and onUpdate for flexibility
+            if (onChange) {
+                onChange(json);
+            }
+            if (onUpdate) {
+                onUpdate(json);
+            }
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] p-4',
+                class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] p-4 ${className}`,
                 placeholder: placeholder,
             },
         },
@@ -193,6 +206,13 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
             }
         };
     }, [editor]);
+
+    // 🎓 LEARNING: Notify when editor is ready
+    React.useEffect(() => {
+        if (editor && onEditorReady) {
+            onEditorReady(editor);
+        }
+    }, [editor, onEditorReady]);
 
     if (!editor) {
         return (

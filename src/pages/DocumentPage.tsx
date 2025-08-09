@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -24,8 +24,7 @@ import { useDocumentsStore } from "../store/documentsStore";
 import type { Database } from "../lib/types";
 import TiptapEditor from "../components/TiptapEditor";
 
-type Document = Database["public"]["Tables"]["documents"]["Row"];
-
+type Document = Database["public"]["Tables"]["documents"]["Row"]
 export const DocumentPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -39,12 +38,9 @@ export const DocumentPage: React.FC = () => {
     const [content, setContent] = useState("");
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [updatingStatus, setUpdatingStatus] = useState(false);
-    const [jsonBContent, setJsonBContent] = useState("");
 
-    const isInitialLoad = useRef(true);
-    const hasUnsavedChanges = useRef(false);
-    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+    // Add debounce ref to prevent rapid saves
+    const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // 🗑️ LEARNING: Delete confirmation state management
     // This demonstrates how to handle destructive actions with user confirmation
@@ -126,9 +122,6 @@ export const DocumentPage: React.FC = () => {
                 const loadedContent = doc.content_text || "";
                 setContent(loadedContent);
 
-                isInitialLoad.current = false;
-                hasUnsavedChanges.current = false;
-
                 console.log("📄 Document loaded:", {
                     id: doc.id,
                     title: doc.title,
@@ -151,21 +144,59 @@ export const DocumentPage: React.FC = () => {
 
     // 🎓 LEARNING: Handle content updates from TipTap editor
     // This function receives rich content from TipTap and updates our state
-    const handleUpdate = (newJsonContent: any, newTextContent: string) => {
-        console.log("📝 Content update from TipTap:", newJsonContent, newTextContent);
+    const handleUpdate = (newContent: any) => {
+        console.log("📝 Content update from TipTap:", newContent);
 
+        // 🎓 LEARNING: Extract plain text from TipTap JSON structure
+        // TipTap provides JSONB content, we need to extract text for our content state
+        const extractText = (content: any): string => {
+            if (!content || !content.content) return '';
+
+            const extractFromNode = (node: any): string => {
+                if (node.type === 'text') {
+                    return node.text || '';
+                }
+
+                if (node.content && Array.isArray(node.content)) {
+                    return node.content.map(extractFromNode).join('');
+                }
+
+                return '';
+            };
+
+            return content.content.map((node: any) => {
+                const text = extractFromNode(node);
+                // Add line breaks for block elements
+                if (node.type === 'paragraph' || node.type === 'heading') {
+                    return text + '\n';
+                }
+                if (node.type === 'bulletList' || node.type === 'orderedList') {
+                    return text + '\n';
+                }
+                return text;
+            }).join('').trim();
+        };
+
+        const newTextContent = extractText(newContent);
+        console.log("📝 Extracted text:", newTextContent);
+
+        // Update our content state - this will trigger auto-save
         setContent(newTextContent);
-        setJsonBContent(newJsonContent);
 
-        hasUnsavedChanges.current = true;
-        console.log("State updated, expect a save event");
-        
+        // Store the JSONB content for database saves (but don't update document state yet)
+        // We'll update it after successful save to avoid infinite loops
+        if (document) {
+            setDocument(prev => prev ? { ...prev, content: newContent } : null);
+        }
     };
 
     // 💾 LEARNING: Enhanced auto-save functionality
     // This demonstrates proper content synchronization with database
-    const saveDocument = async (json?: any) => {
-        if (!id || !document) return;
+    const saveDocument = async () => {
+        if (!id || !document || saving) {
+            console.log("🚫 Save blocked:", { id: !!id, document: !!document, saving });
+            return;
+        }
 
         try {
             setSaving(true);
@@ -177,8 +208,8 @@ export const DocumentPage: React.FC = () => {
             // We save JSONB content and let the database trigger extract plain text automatically
             const updates = {
                 title: title.trim(),
-                // Create proper TipTap JSONB structure
-                content: json || {
+                // Use the actual JSONB content from TipTap editor
+                content: document.content || {
                     type: "doc",
                     content: [
                         {
@@ -194,56 +225,75 @@ export const DocumentPage: React.FC = () => {
                 }
                 // content_text is automatically extracted by database trigger
             };
-            console.log("JSON content received and sent: ", json);
-
+            
             console.log("💾 DocumentPage: Updates to send:", updates);
 
             const updatedDoc = await updateDocument(id, updates);
             console.log("💾 DocumentPage: Save successful:", updatedDoc.id);
 
             // Update our local document state with the saved version
+            // This prevents infinite save loops by syncing our state
             setDocument(updatedDoc);
             setLastSaved(new Date());
-            hasUnsavedChanges.current = false;
+
+            console.log("✅ Save completed successfully");
         } catch (err) {
             console.error("💾 DocumentPage: Save failed:", err);
             // TODO: Add toast notification for better UX
             setError("Failed to save document. Please try again.");
         } finally {
             setSaving(false);
-            console.log("Reached an saving stopped", saving);
         }
     };
 
-    const handleTitleChange = (newTitle: string) => {
-        setTitle(newTitle);
-        hasUnsavedChanges.current = true;
-    }
-
     // Auto-save on title or content change (debounced)
     useEffect(() => {
-        // if (!document || (title === document.title && content === (document.content_text || ""))) {
-        //     return; // No changes to save
-        // }
-
-        if (isInitialLoad.current || !hasUnsavedChanges.current) {
+        if (!document || saving) {
+            console.log("🚫 Auto-save: Blocked", { hasDocument: !!document, saving });
             return;
         }
 
+        const titleChanged = title !== document.title;
+        const contentChanged = content !== (document.content_text || "");
+
+        if (!titleChanged && !contentChanged) {
+            console.log("🚫 Auto-save: No changes detected");
+            return; // No changes to save
+        }
+
+        console.log("⏳ Auto-save: Changes detected, starting timer...", {
+            titleChanged,
+            contentChanged
+        });
+
+        // Clear existing timeout
         if (saveTimeoutRef.current) {
             clearTimeout(saveTimeoutRef.current);
         }
-        saveTimeoutRef.current = setTimeout(() => {
-            saveDocument(jsonBContent);
-            hasUnsavedChanges.current = true;
-        }, 2000); // Auto-save after 2 seconds of inactivity
 
+        // Set new timeout
+        saveTimeoutRef.current = setTimeout(() => {
+            console.log("💾 Auto-save: Timer fired, saving...");
+            saveDocument();
+        }, 1000); // 1 second debounce
+
+        return () => {
+            if (saveTimeoutRef.current) {
+                console.log("🔄 Auto-save: Timer cleared");
+                clearTimeout(saveTimeoutRef.current);
+                saveTimeoutRef.current = null;
+            }
+        };
+    }, [title, content, document?.title]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
         return () => {
             if (saveTimeoutRef.current) {
                 clearTimeout(saveTimeoutRef.current);
             }
         };
-    }, [title, content]);
+    }, []);
 
     // Loading state
     if (loading) {
@@ -408,7 +458,7 @@ export const DocumentPage: React.FC = () => {
                                 <input
                                     type="text"
                                     value={title}
-                                    onChange={(e) => handleTitleChange(e.target.value)}
+                                    onChange={(e) => setTitle(e.target.value)}
                                     className="w-full text-2xl font-bold text-gray-900 border-none outline-none focus:ring-0 p-0 bg-transparent"
                                     placeholder="Document title..."
                                 />
@@ -484,7 +534,7 @@ export const DocumentPage: React.FC = () => {
                                     <div>
                                         <span className="text-gray-500">Word Count:</span>
                                         <div className="text-gray-900">
-                                            {document.word_count || content.split(/\s+/).filter(word => word.length > 0).length} words
+                                            {document.word_count || content.split(' ').filter(word => word.length > 0).length} words
                                         </div>
                                     </div>
                                     <div>

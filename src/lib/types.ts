@@ -272,3 +272,10 @@ export interface Database {
         };
     };
 }
+
+export interface SupabaseConnection {
+    from: (table: string) => Promise<any>;
+    auth: () => Promise<any>;
+    isOnline: () => Promise<boolean>;
+    channel: (name: string) => Promise<any>;
+}

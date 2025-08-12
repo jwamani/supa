@@ -23,6 +23,7 @@ import { useAuthStore } from "../store/authStore";
 import { useDocumentsStore } from "../store/documentsStore";
 import type { Database } from "../lib/types";
 import TiptapEditor from "../components/TiptapEditor";
+import { ShareModal } from "../components/ShareModal";
 
 type Document = Database["public"]["Tables"]["documents"]["Row"]
 export const DocumentPage: React.FC = () => {
@@ -658,132 +659,14 @@ export const DocumentPage: React.FC = () => {
                 </div>
             )}
 
-            {/* 🤝 LEARNING: Share Modal for Permission Management */}
-            {/* This demonstrates document sharing and permission management UI */}
-            {showShareModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md mx-4 w-full">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-medium text-gray-900">
-                                Share Document
-                            </h3>
-                            <button
-                                onClick={() => setShowShareModal(false)}
-                                className="hover:text-black text-gray-500"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        {/* Document sharing info */}
-                        <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                            <div className="flex items-center space-x-2">
-                                <FileText className="h-4 w-4 text-gray-600" />
-                                <span className="text-sm font-medium text-gray-900">{document?.title}</span>
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500">
-                                {document?.is_public ? 'Public document' : 'Private document'}
-                            </div>
-                        </div>
-
-                        {/* Public sharing toggle */}
-                        <div className="mb-4 p-3 border rounded-md">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-2">
-                                    <Globe className="h-4 w-4 text-blue-600" />
-                                    <div>
-                                        <div className="text-sm font-medium text-gray-900">Public Access</div>
-                                        <div className="text-xs text-gray-500">Anyone with the link can view</div>
-                                    </div>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={document?.is_public || false}
-                                        onChange={async (e) => {
-                                            // TODO: Implement public toggle in Phase B
-                                            if (document) {
-                                                const newValue = e.target.checked;
-                                                console.log('Toggle event received: ', {
-                                                    documentId: document.id,
-                                                    currentValue: document.is_public,
-                                                    newValue: newValue
-                                                });
-
-                                                try {
-                                                    const updatedDoc = await updateDocument(document.id, {
-                                                        is_public: newValue
-                                                    });
-
-                                                    console.log('✅ Document updated successfully:', {
-                                                        id: updatedDoc.id,
-                                                        is_public: updatedDoc.is_public
-                                                    });
-                                                } catch (err) {
-                                                    console.error('❌ Error updating public status:', err);
-                                                }
-                                            }
-                                        }}
-                                        className="sr-only peer"
-                                    />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        {/* Collaboration section */}
-                        <div className="mb-4">
-                            <div className="text-sm font-medium text-gray-900 mb-3">Collaborators</div>
-
-                            {/* Add collaborator input - placeholder for Phase B */}
-                            <div className="flex space-x-2 mb-3">
-                                <input
-                                    type="email"
-                                    placeholder="Enter email address..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <button className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                    Add
-                                </button>
-                            </div>
-
-                            {/* Current collaborators - placeholder */}
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                                            Y
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900">You</div>
-                                            <div className="text-xs text-gray-500">Owner</div>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs text-gray-500 bg-green-100 px-2 py-1 rounded-full">Owner</span>
-                                </div>
-
-                                {/* Placeholder for future collaborators */}
-                                <div className="text-center py-4 text-sm text-gray-500">
-                                    No collaborators yet. Add people to collaborate on this document.
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="flex justify-end space-x-3 pt-4 border-t">
-                            <button
-                                onClick={() => setShowShareModal(false)}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-                            >
-                                Close
-                            </button>
-                            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
-                                Copy Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* 🤝 LEARNING: Enhanced ShareModal Component */}
+            {/* This demonstrates using a reusable component for complex functionality */}
+            <ShareModal
+                documentId={id!}
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                document={document}
+            />
         </div>
     );
 };

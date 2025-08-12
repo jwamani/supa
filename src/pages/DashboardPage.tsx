@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useDocuments } from '../hooks/useDocuments';
+import { ShareModal } from '../components/ShareModal';
 import type { Database } from '../lib/types';
 
 import {
@@ -676,148 +677,13 @@ export const DashboardPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Share Document Modal */}
-            {shareModal.isOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-lg w-full p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center">
-                                <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                                    <Share2 className="h-5 w-5 text-blue-600" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Share Document</h3>
-                            </div>
-                            <button
-                                onClick={() => setShareModal({ isOpen: false, document: null })}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <div className="mb-6">
-                            <h4 className="font-medium text-gray-900 mb-2">"{shareModal.document?.title}"</h4>
-                            <p className="text-sm text-gray-600">
-                                Share this document with others and manage their permissions.
-                            </p>
-                        </div>
-
-                        {/* Public sharing toggle */}
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <Globe className="h-5 w-5 text-gray-600 mr-3" />
-                                    <div>
-                                        <div className="font-medium text-gray-900">Public Access</div>
-                                        <div className="text-sm text-gray-600">Anyone with the link can view</div>
-                                    </div>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={shareModal.document?.is_public || false}
-                                        onChange={async (e) => {
-                                            if (shareModal.document) {
-                                                const newValue = e.target.checked;
-                                                console.log('🔄 Toggle clicked:', {
-                                                    documentId: shareModal.document.id,
-                                                    currentValue: shareModal.document.is_public,
-                                                    newValue: newValue
-                                                });
-
-                                                try {
-                                                    const updatedDoc = await updateDocument(shareModal.document.id, {
-                                                        is_public: newValue
-                                                    });
-
-                                                    console.log('✅ Document updated successfully:', {
-                                                        id: updatedDoc.id,
-                                                        is_public: updatedDoc.is_public
-                                                    });
-
-                                                    // Update the modal state to reflect the change using the returned data
-                                                    setShareModal({
-                                                        ...shareModal,
-                                                        document: updatedDoc
-                                                    });
-                                                } catch (err) {
-                                                    console.error('❌ Error updating public status:', err);
-                                                }
-                                            }
-                                        }}
-                                        className="sr-only peer"
-                                    />
-                                    <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ease-in-out ${shareModal.document?.is_public ? 'bg-blue-600' : 'bg-gray-200'
-                                        }`}>
-                                        <div className={`absolute top-0.5 left-0.5 bg-white border border-gray-300 rounded-full h-5 w-5 transition-transform duration-200 ease-in-out ${shareModal.document?.is_public ? 'translate-x-5' : 'translate-x-0'
-                                            }`}></div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        {/* Share link */}
-                        {shareModal.document?.is_public && (
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Public Link
-                                </label>
-                                <div className="flex">
-                                    <input
-                                        type="text"
-                                        value={`${window.location.origin}/public/${shareModal.document.public_slug || shareModal.document.id}`}
-                                        readOnly
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm"
-                                    />
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(
-                                                `${window.location.origin}/public/${shareModal.document?.public_slug || shareModal.document?.id}`
-                                            );
-                                        }}
-                                        className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 text-sm"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Specific user sharing (placeholder for future implementation) */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Share with specific users
-                            </label>
-                            <div className="flex">
-                                <input
-                                    type="email"
-                                    placeholder="Enter email address..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    disabled
-                                />
-                                <button
-                                    disabled
-                                    className="px-4 py-2 bg-gray-300 text-gray-500 rounded-r-lg cursor-not-allowed"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                                User-specific sharing coming soon in Phase B
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end">
-                            <button
-                                onClick={() => setShareModal({ isOpen: false, document: null })}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                            >
-                                Done
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Enhanced ShareModal Component */}
+            <ShareModal
+                documentId={shareModal.document?.id || ''}
+                isOpen={shareModal.isOpen}
+                onClose={() => setShareModal({ isOpen: false, document: null })}
+                document={shareModal.document || undefined}
+            />
         </div>
     );
 };

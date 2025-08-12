@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { AuthForm } from '../components/auth/AuthForm';
+import MultiModeAuth from '../components/auth/MultiModeAuth';
 import { FileText, BugPlay } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-type AuthMode = "signin" | "signup";
+import { useConnection } from '../hooks/useConnection';
+import { Connectivity } from '../components/Connectivity';
 
 export const AuthPage: React.FC = () => {
-    const [authMode, setAuthMode] = useState<AuthMode>('signin');
     const navigate = useNavigate();
-
-    const toggleAuthMode = () => {
-        setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
-    };
+    const { isOnline } = useConnection();
 
     const handlePlay = () => {
         navigate('/playground');
+    }
+
+    if (!isOnline) {
+        return <Connectivity />
     }
 
     return (
@@ -29,7 +29,7 @@ export const AuthPage: React.FC = () => {
                         <div className="text-2xl font-bold text-gray-900">DocCollab</div>
                     </div>
                 </div>
-                
+
 
                 {/* Tagline */}
                 <div className="text-center mb-8">
@@ -43,12 +43,12 @@ export const AuthPage: React.FC = () => {
                 </div>
 
                 {/* Auth Form */}
-                <AuthForm mode={authMode} onToggleMode={toggleAuthMode} />
+                <MultiModeAuth />
 
                 <div className='flex mt-3 items-center px-4 gap-3 bg-gray-200 rounded-sm py-3' >
                     <p>Checkout supabase features in the playground</p>
                     <button onClick={handlePlay} className='cursor-pointer' >
-                        <BugPlay color='teal'/>
+                        <BugPlay color='teal' />
                     </button>
                 </div>
 
